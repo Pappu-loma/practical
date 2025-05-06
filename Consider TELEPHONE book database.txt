@@ -1,0 +1,113 @@
+#include <iostream>
+#include <vector>
+#include <list>
+using namespace std;
+
+// Client record structure
+struct Client {
+    string name;
+    string phone;
+};
+
+// Method 1: Chaining
+class HashTableChain {
+private:
+    int size;
+    vector<list<Client>> table;
+
+    int hash(string key) {
+        int sum = 0;
+        for (char c : key) sum += c;
+        return sum % size;
+    }
+
+public:
+    HashTableChain(int s) : size(s), table(s) {}
+
+    void insert(string name, string phone) {
+        int index = hash(name);
+        table[index].push_back({name, phone});
+    }
+
+    int search(string name) {
+        int index = hash(name);
+        int comparisons = 0;
+        
+        for (auto& client : table[index]) {
+            comparisons++;
+            if (client.name == name) {
+                cout << "Found: " << client.phone << " (Comparisons: " << comparisons << ")\n";
+                return comparisons;
+            }
+        }
+        cout << "Not found! (Comparisons: " << comparisons << ")\n";
+        return comparisons;
+    }
+};
+
+// Method 2: Linear Probing
+class HashTableLinear {
+private:
+    int size;
+    vector<Client> table;
+    vector<bool> isOccupied;
+
+    int hash(string key) {
+        int sum = 0;
+        for (char c : key) sum += c;
+        return sum % size;
+    }
+
+public:
+    HashTableLinear(int s) : size(s), table(s), isOccupied(s, false) {}
+
+    void insert(string name, string phone) {
+        int index = hash(name);
+        while (isOccupied[index]) index = (index + 1) % size;
+        table[index] = {name, phone};
+        isOccupied[index] = true;
+    }
+
+    int search(string name) {
+        int index = hash(name);
+        int comparisons = 0;
+        int original = index;
+
+        do {
+            comparisons++;
+            if (isOccupied[index] && table[index].name == name) {
+                cout << "Found: " << table[index].phone << " (Comparisons: " << comparisons << ")\n";
+                return comparisons;
+            }
+            index = (index + 1) % size;
+        } while (index != original && isOccupied[index]);
+
+        cout << "Not found! (Comparisons: " << comparisons << ")\n";
+        return comparisons;
+    }
+};
+
+int main() {
+    // Initialize hash tables
+    HashTableChain chainTable(10);
+    HashTableLinear linearTable(10);
+
+    // Insert sample data
+    chainTable.insert("Alice", "1234567890");
+    chainTable.insert("Bob", "9876543210");
+    linearTable.insert("Alice", "1234567890");
+    linearTable.insert("Bob", "9876543210");
+
+    // Compare search performance
+    cout << "Chaining Method:\n";
+    int chainComparisons = chainTable.search("Alice") + chainTable.search("Bob");
+
+    cout << "\nLinear Probing Method:\n";
+    int linearComparisons = linearTable.search("Alice") + linearTable.search("Bob");
+
+    cout << "\nComparison Results:\n";
+    cout << "Total comparisons (Chaining): " << chainComparisons << endl;
+    cout << "Total comparisons (Linear Probing): " << linearComparisons << endl;
+
+    return 0;
+}

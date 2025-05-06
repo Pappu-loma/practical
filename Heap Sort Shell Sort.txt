@@ -1,0 +1,45 @@
+public class Main {
+    static void heapSort(int[] a) {
+        int n = a.length;
+        for (int i = n / 2 - 1; i >= 0; i--) heapify(a, n, i);
+        for (int i = n - 1; i > 0; i--) {
+            int t = a[0]; a[0] = a[i]; a[i] = t;
+            heapify(a, i, 0);
+        }
+    }
+
+    static void heapify(int[] a, int n, int i) {
+        int l = 2 * i + 1, r = 2 * i + 2, m = i;
+        if (l < n && a[l] > a[m]) m = l;
+        if (r < n && a[r] > a[m]) m = r;
+        if (m != i) {
+            int t = a[i]; a[i] = a[m]; a[m] = t;
+            heapify(a, n, m);
+        }
+    }
+
+    static void shellSort(int[] a) {
+        for (int g = a.length / 2; g > 0; g /= 2)
+            for (int i = g; i < a.length; i++) {
+                int t = a[i], j = i;
+                while (j >= g && a[j - g] > t) {
+                    a[j] = a[j - g];
+                    j -= g;
+                }
+                a[j] = t;
+            }
+    }
+
+    public static void main(String[] args) {
+        int[] h = {20, 10, 40, 30, 50};
+        int[] s = {80, 20, 60, 10, 50};
+
+        heapSort(h);
+        shellSort(s);
+
+        System.out.println("Heap Sort Result:");
+        for (int x : h) System.out.print(x + " ");
+        System.out.println("\nShell Sort Result:");
+        for (int x : s) System.out.print(x + " ");
+    }
+}

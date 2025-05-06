@@ -1,0 +1,162 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <map>
+#include <limits>
+using namespace std;
+
+struct Employee {
+    int id;
+    string name, designation;
+    float salary;
+};
+
+void addEmployee() {
+    Employee emp;
+    cout << "Enter ID: ";
+    while (!(cin >> emp.id)) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Invalid ID. Please enter a number: ";
+    }
+    
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cout << "Enter Name: ";
+    getline(cin, emp.name);
+    
+    cout << "Enter Designation: ";
+    getline(cin, emp.designation);
+    
+    cout << "Enter Salary: ";
+    while (!(cin >> emp.salary) || emp.salary < 0) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Invalid salary. Please enter a positive number: ";
+    }
+
+    ofstream data("data.txt", ios::app);
+    ofstream index("index.txt", ios::app);
+    
+    if (!data || !index) {
+        cout << "Error opening files!\n";
+        return;
+    }
+    
+    long pos = data.tellp();
+    data << emp.id << " " << emp.name << " " << emp.designation << " " << emp.salary << endl;
+    index << emp.id << " " << pos << endl;
+
+    data.close();
+    index.close();
+    cout << "Employee added successfully!\n";
+}
+
+void displayEmployee(int id) {
+    ifstream index("index.txt");
+    ifstream data("data.txt");
+    
+    if (!data || !index) {
+        cout << "Error opening files!\n";
+        return;
+    }
+
+    int key;
+    long pos;
+    bool found = false;
+
+    while (index >> key >> pos) {
+        if (key == id) {
+            data.seekg(pos);
+            Employee emp;
+            data >> emp.id;
+            data.ignore();
+            getline(data, emp.name);
+            getline(data, emp.designation);
+            data >> emp.salary;
+            
+            cout << "\nEmployee Details:\n";
+            cout << "ID: " << emp.id << "\nName: " << emp.name
+                 << "\nDesignation: " << emp.designation << "\nSalary: " << emp.salary << endl;
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) cout << "Employee not found.\n";
+
+    index.close();
+    data.close();
+}
+
+void deleteEmployee(int id) {
+    ifstream index("index.txt");
+    ofstream temp("temp.txt");
+    
+    if (!index || !temp) {
+        cout << "Error opening files!\n";
+        return;
+    }
+
+    int key;
+    long pos;
+    bool found = false;
+
+    while (index >> key >> pos) {
+        if (key != id) temp << key << " " << pos << endl;
+        else found = true;
+    }
+
+    index.close();
+    temp.close();
+    
+    if (remove("index.txt") != 0) {
+        cout << "Error deleting index file!\n";
+        return;
+    }
+    if (rename("temp.txt", "index.txt") != 0) {
+        cout << "Error renaming file!\n";
+        return;
+    }
+
+    if (found) cout << "Employee deleted successfully!\n";
+    else cout << "Employee not found.\n";
+}
+
+int main() {
+    int choice, id;
+    while (true) {
+        cout << "\n1. Add Employee\n2. Display Employee\n3. Delete Employee\n4. Exit\nEnter choice: ";
+        while (!(cin >> choice) || choice < 1 || choice > 4) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid choice. Please enter a number between 1 and 4: ";
+        }
+
+        switch(choice) {
+            case 1:
+                addEmployee();
+                break;
+            case 2:
+                cout << "Enter Employee ID: ";
+                while (!(cin >> id)) {
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    cout << "Invalid ID. Please enter a number: ";
+                }
+                displayEmployee(id);
+                break;
+            case 3:
+                cout << "Enter Employee ID: ";
+                while (!(cin >> id)) {
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    cout << "Invalid ID. Please enter a number: ";
+                }
+                deleteEmployee(id);
+                break;
+            case 4:
+                cout << "Exiting program...\n";
+                return 0;
+        }
+    }
+}

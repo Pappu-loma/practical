@@ -1,0 +1,62 @@
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+class Node {
+public:
+    string title;
+    vector<Node*> children;
+    
+    Node(string t) : title(t) {}
+    
+    void addChild(Node* child) {
+        children.push_back(child);
+    }
+};
+
+void printTree(Node* root, int level = 0) {
+    if (!root) return;
+    
+    for (int i = 0; i < level; i++) {
+        cout << "  ";
+    }
+    
+    cout << root->title << endl;
+    
+    for (Node* child : root->children) {
+        printTree(child, level + 1);
+    }
+}
+
+int main() {
+    Node* book = new Node("Book: Data Structures");
+    
+    Node* ch1 = new Node("Chapter 1: Introduction");
+    Node* ch2 = new Node("Chapter 2: Trees");
+    
+    Node* sec1_1 = new Node("Section 1.1: Basics");
+    Node* sec1_2 = new Node("Section 1.2: Applications");
+    
+    Node* subsec1_1_1 = new Node("Subsection 1.1.1: Definitions");
+    Node* subsec1_1_2 = new Node("Subsection 1.1.2: Examples");
+    
+    book->addChild(ch1);
+    book->addChild(ch2);
+    
+    ch1->addChild(sec1_1);
+    ch1->addChild(sec1_2);
+    
+    sec1_1->addChild(subsec1_1_1);
+    sec1_1->addChild(subsec1_1_2);
+    
+    cout << "Book Structure:" << endl;
+    printTree(book);
+    
+    cout << "\nComplexity Analysis:" << endl;
+    cout << "Time Complexity: O(n) where n is the total number of nodes" << endl;
+    cout << "Space Complexity: O(n) for storing the tree + O(h) for recursion stack" << endl;
+    cout << "where h is the height of the tree" << endl;
+    
+    return 0;
+}

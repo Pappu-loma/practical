@@ -1,0 +1,42 @@
+#include <iostream>
+#include <vector>
+#include <limits>
+using namespace std;
+
+void optimalBST(vector<float> p, int n) {
+    vector<vector<float>> cost(n + 2, vector<float>(n + 1, 0));
+    vector<vector<int>> root(n + 2, vector<int>(n + 1, 0));
+
+    for (int i = 1; i <= n + 1; i++)
+        cost[i][i - 1] = 0;
+
+    for (int l = 1; l <= n; l++) {
+        for (int i = 1; i <= n - l + 1; i++) {
+            int j = i + l - 1;
+            cost[i][j] = numeric_limits<float>::max();
+            float sum = 0;
+
+            for (int s = i; s <= j; s++)
+                sum += p[s - 1];
+
+            for (int r = i; r <= j; r++) {
+                float c = cost[i][r - 1] + cost[r + 1][j] + sum;
+                if (c < cost[i][j]) {
+                    cost[i][j] = c;
+                    root[i][j] = r;
+                }
+            }
+        }
+    }
+
+    cout << "Minimum search cost: " << cost[1][n] << endl;
+    cout << "Root of OBST: " << root[1][n] << endl;
+}
+
+int main() {
+    vector<float> probabilities = {0.1, 0.2, 0.4, 0.3}; // Example probabilities
+    int n = probabilities.size();
+
+    optimalBST(probabilities, n);
+    return 0;
+}

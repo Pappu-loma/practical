@@ -1,0 +1,135 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+struct Node {
+    string keyword, meaning;
+    Node *left, *right;
+
+    Node(string k, string m) : keyword(k), meaning(m), left(NULL), right(NULL) {}
+};
+
+class DictionaryBST {
+    Node* root;
+
+    Node* insert(Node* root, string k, string m) {
+        if (!root) return new Node(k, m);
+        if (k < root->keyword)
+            root->left = insert(root->left, k, m);
+        else if (k > root->keyword)
+            root->right = insert(root->right, k, m);
+        else
+            cout << "Keyword already exists!\n";
+        return root;
+    }
+
+    Node* search(Node* root, string k, int& comparisons) {
+        comparisons++;
+        if (!root || root->keyword == k)
+            return root;
+        if (k < root->keyword)
+            return search(root->left, k, comparisons);
+        return search(root->right, k, comparisons);
+    }
+
+    Node* findMin(Node* root) {
+        while (root && root->left)
+            root = root->left;
+        return root;
+    }
+
+    Node* remove(Node* root, string k) {
+        if (!root) return NULL;
+        if (k < root->keyword)
+            root->left = remove(root->left, k);
+        else if (k > root->keyword)
+            root->right = remove(root->right, k);
+        else {
+            if (!root->left) {
+                Node* temp = root->right;
+                delete root;
+                return temp;
+            } else if (!root->right) {
+                Node* temp = root->left;
+                delete root;
+                return temp;
+            }
+            Node* temp = findMin(root->right);
+            root->keyword = temp->keyword;
+            root->meaning = temp->meaning;
+            root->right = remove(root->right, temp->keyword);
+        }
+        return root;
+    }
+
+    void displayAscending(Node* root) {
+        if (root) {
+            displayAscending(root->left);
+            cout << root->keyword << ": " << root->meaning << endl;
+            displayAscending(root->right);
+        }
+    }
+
+    void displayDescending(Node* root) {
+        if (root) {
+            displayDescending(root->right);
+            cout << root->keyword << ": " << root->meaning << endl;
+            displayDescending(root->left);
+        }
+    }
+
+public:
+    DictionaryBST() : root(NULL) {}
+
+    void insert(string k, string m) {
+        root = insert(root, k, m);
+    }
+
+    void search(string k) {
+        int comparisons = 0;
+        Node* res = search(root, k, comparisons);
+        if (res)
+            cout << "Found: " << res->keyword << " -> " << res->meaning << " (Comparisons: " << comparisons << ")\n";
+        else
+            cout << "Not found. Comparisons: " << comparisons << endl;
+    }
+
+    void remove(string k) {
+        root = remove(root, k);
+    }
+
+    void update(string k, string newMeaning) {
+        int dummy = 0;
+        Node* res = search(root, k, dummy);
+        if (res)
+            res->meaning = newMeaning;
+        else
+            cout << "Keyword not found.\n";
+    }
+
+    void display(bool ascending = true) {
+        if (ascending)
+            displayAscending(root);
+        else
+            displayDescending(root);
+    }
+};
+
+int main() {
+    DictionaryBST dict;
+    dict.insert("apple", "A fruit");
+    dict.insert("banana", "Another fruit");
+    dict.insert("cat", "An animal");
+
+    dict.display(); // Ascending
+
+    dict.search("banana");
+
+    dict.update("banana", "A yellow fruit");
+    dict.remove("apple");
+
+    cout << "\nDescending Order:\n";
+    dict.display(false);
+
+    return 0;
+}

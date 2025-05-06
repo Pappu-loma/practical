@@ -1,0 +1,124 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <unordered_map>
+using namespace std;
+
+class FlightGraph {
+private:
+    unordered_map<string, unordered_map<string, int>> adjList; // {city: {neighbor: cost}}
+    vector<vector<int>> adjMatrix;
+    vector<string> cities;
+    bool useMatrix;
+
+    int getIndex(string city) {
+        for (int i = 0; i < cities.size(); i++) {
+            if (cities[i] == city) return i;
+        }
+        cities.push_back(city);
+        return cities.size() - 1;
+    }
+
+public:
+    FlightGraph(bool matrix = false) : useMatrix(matrix) {}
+
+    void addFlight(string src, string dest, int cost) {
+        if (useMatrix) {
+            int srcIdx = getIndex(src);
+            int destIdx = getIndex(dest);
+            if (adjMatrix.size() <= srcIdx) adjMatrix.resize(srcIdx + 1);
+            if (adjMatrix[srcIdx].size() <= destIdx) adjMatrix[srcIdx].resize(destIdx + 1, 0);
+            adjMatrix[srcIdx][destIdx] = cost;
+        } else {
+            adjList[src][dest] = cost;
+            adjList[dest][src] = cost; // Undirected graph
+        }
+    }
+
+    bool isConnected() {
+        if (useMatrix) {
+            if (cities.empty()) return true;
+            vector<bool> visited(cities.size(), false);
+            queue<int> q;
+            q.push(0);
+            visited[0] = true;
+            int count = 1;
+
+            while (!q.empty()) {
+                int u = q.front();
+                q.pop();
+                for (int v = 0; v < adjMatrix[u].size(); v++) {
+                    if (adjMatrix[u][v] > 0 && !visited[v]) {
+                        visited[v] = true;
+                        count++;
+                        q.push(v);
+                    }
+                }
+            }
+            return count == cities.size();
+        } else {
+            if (adjList.empty()) return true;
+            unordered_map<string, bool> visited;
+            queue<string> q;
+            string start = adjList.begin()->first;
+            q.push(start);
+            visited[start] = true;
+            int count = 1;
+
+            while (!q.empty()) {
+                string u = q.front();
+                q.pop();
+                for (auto& neighbor : adjList[u]) {
+                    if (!visited[neighbor.first]) {
+                        visited[neighbor.first] = true;
+                        count++;
+                        q.push(neighbor.first);
+                    }
+                }
+            }
+            return count == adjList.size();
+        }
+    }
+
+    void printRepresentation() {
+        if (useMatrix) {
+            cout << "Adjacency Matrix:\n";
+            for (int i = 0; i < adjMatrix.size(); i++) {
+                for (int j = 0; j < adjMatrix[i].size(); j++) {
+                    cout << adjMatrix[i][j] << " ";
+                }
+                cout << endl;
+            }
+        } else {
+            cout << "Adjacency List:\n";
+            for (auto& city : adjList) {
+                cout << city.first << " -> ";
+                for (auto& neighbor : city.second) {
+                    cout << neighbor.first << "(" << neighbor.second << ") ";
+                }
+                cout << endl;
+            }
+        }
+    }
+};
+
+int main() {
+    // Using adjacency list (default)
+    FlightGraph listGraph(false);
+    listGraph.addFlight("Delhi", "Mumbai", 2);
+    listGraph.addFlight("Delhi", "Bangalore", 3);
+    listGraph.addFlight("Mumbai", "Chennai", 1);
+    
+    listGraph.printRepresentation();
+    cout << "Is connected? " << (listGraph.isConnected() ? "Yes" : "No") << endl;
+
+    // Using adjacency matrix
+    FlightGraph matrixGraph(true);
+    matrixGraph.addFlight("London", "Paris", 1);
+    matrixGraph.addFlight("London", "Berlin", 2);
+    
+    matrixGraph.printRepresentation();
+    cout << "Is connected? " << (matrixGraph.isConnected() ? "Yes" : "No") << endl;
+
+    return 0;
+}

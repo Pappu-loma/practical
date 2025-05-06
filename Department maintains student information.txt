@@ -1,0 +1,95 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+struct Student {
+    int roll;
+    char name[50];  // Changed to fixed-size char array
+    char division;
+    char address[100];  // Changed to fixed-size char array
+};
+
+void addStudent() {
+    ofstream file("students.txt", ios::app | ios::binary);
+    if (!file) {
+        cout << "Error opening file!\n";
+        return;
+    }
+    
+    Student s;
+    cout << "Enter Roll No: ";
+    cin >> s.roll;
+    cin.ignore();
+    
+    cout << "Enter Name: ";
+    cin.getline(s.name, 50);
+    
+    cout << "Enter Division (A/B/C): ";
+    cin >> s.division;
+    cin.ignore();
+    
+    cout << "Enter Address: ";
+    cin.getline(s.address, 100);
+    
+    file.write(reinterpret_cast<char*>(&s), sizeof(Student));
+    cout << "Record added successfully!\n";
+    file.close();
+}
+
+void deleteStudent(int roll) {
+    ifstream in("students.txt", ios::binary);
+    ofstream temp("temp.txt", ios::binary);
+    Student s;
+    bool found = false;
+    
+    while (in.read((char*)&s, sizeof(Student))) {
+        if (s.roll != roll) {
+            temp.write((char*)&s, sizeof(Student));
+        } else {
+            found = true;
+        }
+    }
+    
+    in.close(); temp.close();
+    remove("students.txt");
+    rename("temp.txt", "students.txt");
+    
+    cout << (found ? "Record deleted!\n" : "Record not found!\n");
+}
+
+void displayStudent(int roll) {
+    ifstream file("students.txt", ios::binary);
+    Student s;
+    bool found = false;
+    
+    while (file.read(reinterpret_cast<char*>(&s), sizeof(Student))) {
+        if (s.roll == roll) {
+            cout << "\nRoll No: " << s.roll
+                 << "\nName: " << string(s.name)  // Convert char array to string
+                 << "\nDivision: " << s.division
+                 << "\nAddress: " << string(s.address) << endl;  // Convert char array to string
+            found = true;
+            break;
+        }
+    }
+    
+    if (!found) cout << "Record not found!\n";
+    file.close();
+}
+
+int main() {
+    int choice, roll;
+    while (true) {
+        cout << "\n1. Add Student\n2. Delete Student\n3. Display Student\n4. Exit\nChoice: ";
+        cin >> choice;
+        
+        switch (choice) {
+            case 1: addStudent(); break;
+            case 2: cout << "Enter Roll No to delete: "; cin >> roll; deleteStudent(roll); break;
+            case 3: cout << "Enter Roll No to display: "; cin >> roll; displayStudent(roll); break;
+            case 4: return 0;
+            default: cout << "Invalid choice!\n";
+        }
+    }
+}

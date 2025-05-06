@@ -1,0 +1,104 @@
+#include <iostream>
+using namespace std;
+
+class Node {
+public:
+    int data;
+    Node* left;
+    Node* right;
+    Node(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+class BST {
+private:
+    Node* root;
+
+    Node* insertHelper(Node* node, int val) {
+        if (!node) return new Node(val);
+        if (val < node->data) node->left = insertHelper(node->left, val);
+        else node->right = insertHelper(node->right, val);
+        return node;
+    }
+
+    void mirrorHelper(Node* node) {
+        if (!node) return;
+        swap(node->left, node->right);
+        mirrorHelper(node->left);
+        mirrorHelper(node->right);
+    }
+
+    int findMinHelper(Node* node) {
+        return node->left ? findMinHelper(node->left) : node->data;
+    }
+
+    int longestPathHelper(Node* node) {
+        if (!node) return 0;
+        return 1 + max(longestPathHelper(node->left), longestPathHelper(node->right));
+    }
+
+    bool searchHelper(Node* node, int val) {
+        if (!node) return false;
+        if (val == node->data) return true;
+        return val < node->data ? searchHelper(node->left, val) : searchHelper(node->right, val);
+    }
+
+    void inorderHelper(Node* node) {
+        if (!node) return;
+        inorderHelper(node->left);
+        cout << node->data << " ";
+        inorderHelper(node->right);
+    }
+
+public:
+    BST() : root(nullptr) {}
+
+    void insert(int val) {
+        root = insertHelper(root, val);
+    }
+
+    void mirror() {
+        mirrorHelper(root);
+    }
+
+    int findMin() {
+        if (!root) return -1;
+        return findMinHelper(root);
+    }
+
+    int longestPath() {
+        return longestPathHelper(root);
+    }
+
+    bool search(int val) {
+        return searchHelper(root, val);
+    }
+
+    void display() {
+        inorderHelper(root);
+        cout << endl;
+    }
+};
+
+int main() {
+    BST tree;
+    int values[] = {50, 30, 70, 20, 40, 60, 80};
+    
+    // Insert nodes
+    for (int val : values) {
+        tree.insert(val);
+    }
+
+    cout << "Original BST (Inorder): ";
+    tree.display();
+
+    cout << "Minimum value: " << tree.findMin() << endl;
+    cout << "Longest path length: " << tree.longestPath() << endl;
+
+    cout << "Search for 40: " << (tree.search(40) ? "Found" : "Not found") << endl;
+
+    tree.mirror();
+    cout << "Mirrored BST (Inorder): ";
+    tree.display();
+
+    return 0;
+}
