@@ -1,0 +1,85 @@
+#include <iostream>
+#include <list>
+#include <string>
+using namespace std;
+
+const int TABLE_SIZE = 10;
+
+class HashTable {
+    list<pair<string, string>> table[TABLE_SIZE];
+
+    int hashFunction(string key) {
+        int hash = 0;
+        for (char c : key)
+            hash += c;
+        return hash % TABLE_SIZE;
+    }
+
+public:
+    void insert(string key, string value) {
+        int index = hashFunction(key);
+        for (auto& kv : table[index]) {
+            if (kv.first == key) {
+                kv.second = value; // Update
+                return;
+            }
+        }
+        table[index].push_back({key, value});
+    }
+
+    void find(string key) {
+        int index = hashFunction(key);
+        for (auto& kv : table[index]) {
+            if (kv.first == key) {
+                cout << key << " -> " << kv.second << endl;
+                return;
+            }
+        }
+        cout << key << " not found\n";
+    }
+
+    void remove(string key) {
+        int index = hashFunction(key);
+        for (auto it = table[index].begin(); it != table[index].end(); ++it) {
+            if (it->first == key) {
+                table[index].erase(it);
+                cout << key << " deleted\n";
+                return;
+            }
+        }
+        cout << key << " not found\n";
+    }
+
+    void display() {
+        for (int i = 0; i < TABLE_SIZE; i++) {
+            cout << i << ": ";
+            for (auto& kv : table[i])
+                cout << "[" << kv.first << ": " << kv.second << "] ";
+            cout << endl;
+        }
+    }
+};
+
+int main() {
+    HashTable ht;
+    
+    // Test the hash table
+    ht.insert("name", "John");
+    ht.insert("age", "25");
+    ht.insert("city", "New York");
+    
+    cout << "Initial Hash Table:" << endl;
+    ht.display();
+    
+    cout << "\nFinding elements:" << endl;
+    ht.find("name");
+    ht.find("age");
+    
+    cout << "\nRemoving 'age':" << endl;
+    ht.remove("age");
+    
+    cout << "\nFinal Hash Table:" << endl;
+    ht.display();
+    
+    return 0;
+}
